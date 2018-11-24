@@ -1,0 +1,23 @@
+antlets/_templates/ubuntu-xenial
+    antlets/_templates/ubuntu-xenial@snap
+        antlets/ant1
+            antlets/ant1@s1
+                antlets/from-ant1-snap
+        antlets/ant2
+            antlets/ant2@ant2-s1
+                antlets/_templates/ant2s1-template.lxc
+                    antlets/_templates/ant2s1-template.lxc@snap
+                        antlets/Bazinga
+            antlets/ant2@ant2-s2
+        antlets/ant3
+
+
+
+antlets/_templates/ubuntu-xenial
+    antlets/_templates/ubuntu-xenial@snap
+        antlets/ant2
+            antlets/ant2@ant2-s1
+                antlets/_templates/ant2s1-template.lxc
+                    antlets/_templates/ant2s1-template.lxc@snap
+                        antlets/Bazinga
+            antlets/ant2@ant2-s2
