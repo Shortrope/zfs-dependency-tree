@@ -56,9 +56,8 @@ def add_children(zlist_w_parents):
     return new_zlist
 
 
-def show_dependency_tree():
+def show_dependency_tree(zfs, zlist):
     pass
-
 
 def main():
 
