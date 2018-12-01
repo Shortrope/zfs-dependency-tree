@@ -4,7 +4,6 @@ from subprocess import Popen, PIPE
 import re
 from pprint import pprint as pp
 
-zfs_list = []
 
 # Create zfs list with snapshots
 def get_zfs_list():
@@ -26,12 +25,12 @@ def add_parents(zlist):
             for bytes in lister.stdout:
                 parent = bytes.decode().strip()
                 if parent in zlist:
-                    item = dict(name=item, parent_index=zlist.index(parent))
+                    item = dict(zfs=item, parent_index=zlist.index(parent))
                 elif "@" in item:
                     parent = item.partition('@')[0]
-                    item = dict(name=item, parent_index=zlist.index(parent))
+                    item = dict(zfs=item, parent_index=zlist.index(parent))
                 else:
-                    item = dict(name=None)
+                    item = dict(zfs=item, parent_index=None)
 
                 new_zlist.append(item)
                 
@@ -63,6 +62,9 @@ def add_children(zlist_w_parents):
     return new_zlist
 
 
+def show_dependency_tree():
+    pass
+
 
 def main():
 
@@ -72,7 +74,24 @@ def main():
 
     #pp(zfs_list)
     #pp(zfs_list_w_parents)
-    pp(zfs_list_w_children)
+    #pp(zfs_list_w_children)
+
+    #for i, v in enumerate(zfs_list):
+        #print("{}: {}".format(i, v))
+        #if i == 5:
+            #break
+
+    #print("")
+    #for i, v in enumerate(zfs_list_w_parents):
+        #print("{}: {}".format(i, v))
+        #if i == 5:
+            #break
+
+    print("")
+    for i, v in enumerate(zfs_list_w_children):
+        print("{}: {}".format(i, v))
+        #if i == 5:
+            #break
 
 
 if __name__ == '__main__':
