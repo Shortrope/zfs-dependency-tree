@@ -29,8 +29,8 @@ def create_dependency_list(zlist):
         if item['parent'] != '-':
             continue
         elif '@' in item['name']:
-            zfs = item['name'].partition('@')[0]
-            item['parent'] = zfs
+            parent_name = item['name'].partition('@')[0]
+            item['parent'] = parent_name
         else:
             item['parent'] = None
 
