@@ -1,10 +1,12 @@
 #!/usr/bin/python3
+'''View antlet dependencies'''
 
 from subprocess import Popen, PIPE
 from pprint import pprint as pp
 
 
 def get_zfs_name_origin_list():
+    '''Gets a list of strings, each containing the zfs name and origin - incluedes snapshots'''
 
     zfs_list = []
 
@@ -20,6 +22,12 @@ def get_zfs_name_origin_list():
 
 
 def create_dependency_list(zlist):
+    '''Creates a dependency list from the 'name origin' list. 
+    It is a list of dict's, one for each zfs name. 
+    Keys are:
+        'name':  String - zfs name
+        'parent' String - parent zfs name
+        'children' List of Strings - zfs names of dependent children'''
 
     # convert each name,origin string into a dict
     for index, item in enumerate(zlist):
