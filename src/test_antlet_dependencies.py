@@ -8,6 +8,7 @@ from zfs_dependencies import *
 class TestAntletDependencies(unittest.TestCase):
 
     def setUp(self):
+
         self.short_zfs_list = ["antlets\t-",
                         "antlets/_templates/ubuntu-xenial\t-",
                         "antlets/_templates/ubuntu-xenial@snap\t-",
@@ -98,6 +99,7 @@ class TestAntletDependencies(unittest.TestCase):
     def test_create_dependency_list(self):
         result = create_dependency_list(self.short_zfs_list)
         self.assertEqual(result, self.short_dependency_list)
+
 
 
 if __name__ == '__main__':
