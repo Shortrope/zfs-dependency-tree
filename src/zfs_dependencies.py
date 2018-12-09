@@ -56,11 +56,87 @@ def create_dependency_list(zlist):
     return zlist
 
 
+def get_zfs(zfs_name):
+
+    for item in dependency_list:
+        if item['name'] == zfs_name:
+            return item
+
+
+def get_parent_list(zfs_name):
+    parent_list = []
+
+    parent = get_zfs(zfs_name)['parent']
+    count = 0 # protect against infinit loop
+
+    while parent != None and count < 20:
+        parent_list.append(parent)
+        parent = get_zfs(parent)['parent']
+        count += 1
+
+    parent_list.reverse()
+    return parent_list
+
+
+def show_parents(zfs_name):
+    parent_list = get_parent_list(zfs_name)
+    parent_list.append(zfs_name)
+    indent = " " * 4
+    next_level = "\u2514\u2500\u2500 "
+    count = -1
+    for item in parent_list:
+        if count < 0:
+            prefix = ""
+        else:
+            prefix = "{}{}".format(indent * count, next_level)
+
+        print(prefix + item)
+        count += 1
+
+
+def _get_child_tree(zfs_name, depth=0):
+    for item in dependency_list:
+        if zfs_name == item['name']:
+            for i in item['children']:
+                indent = " " * 4
+                next_level = "\u2514\u2500\u2500 "
+                prefix = "{}{}".format((indent * (depth-1)), next_level)
+                print("{}{}".format(prefix, i))
+                _get_child_tree(i, depth+1)
+
+
+def show_children(zfs_name):
+    global dependency_list
+    print(zfs_name)
+    _get_child_tree(zfs_name, 1)
+
+
+
+def show_tree(zfs=None):
+    if zfs:
+        # show tree for specific zfs
+        show_parents(zfs)
+        show_children(zfs)
+    #else:
+        # show entire tree.. all trees
+
+
 def main():
 
     zfs_name_origin_list = get_zfs_name_origin_list()
+
+    global dependency_list
     dependency_list = create_dependency_list(zfs_name_origin_list)
-    pp(dependency_list)
+
+    #pp(dependency_list)
+    #show_tree('antlets/ant1')
+    show_tree('antlets/_templates/Win10')
+    #show_parents('antlets/ant1')
+    #show_children('antlets/_templates/ubuntu-xenial')
+    #show_children('antlets/_templates/ubuntu-xenial@snap')
+    #print(get_parent('antlets/ant2'))
+    #print(get_parent('antlets/Win10-iso'))
+    #print(get_parent('antlets/_templates/Win10@snap'))
 
 
 if __name__ == '__main__':
