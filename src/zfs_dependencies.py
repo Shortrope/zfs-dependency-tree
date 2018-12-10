@@ -1,11 +1,12 @@
-#!/usr/bin/python3
-'''View antlet dependencies'''
+#!/usr/bin/env python3
+'''Get antlet dependencies'''
 
 from subprocess import Popen, PIPE
+import argparse
 from pprint import pprint as pp
 
 
-def get_zfs_name_origin_list():
+def _get_zfs_name_origin_list():
     '''Gets a list of strings, each containing the zfs name and origin - incluedes snapshots'''
 
     zfs_list = []
@@ -56,22 +57,22 @@ def create_dependency_list(zlist):
     return zlist
 
 
-def get_zfs(zfs_name):
+def _get_zfs_item(zfs_name):
 
     for item in dependency_list:
         if item['name'] == zfs_name:
             return item
 
 
-def get_parent_list(zfs_name):
+def _get_parent_list(zfs_name):
     parent_list = []
 
-    parent = get_zfs(zfs_name)['parent']
+    parent = _get_zfs_item(zfs_name)['parent']
     count = 0 # protect against infinit loop
 
     while parent != None and count < 20:
         parent_list.append(parent)
-        parent = get_zfs(parent)['parent']
+        parent = _get_zfs_item(parent)['parent']
         count += 1
 
     parent_list.reverse()
@@ -79,7 +80,7 @@ def get_parent_list(zfs_name):
 
 
 def show_parents(zfs_name):
-    parent_list = get_parent_list(zfs_name)
+    parent_list = _get_parent_list(zfs_name)
     parent_list.append(zfs_name)
     indent = " " * 4
     next_level = "\u2514\u2500\u2500 "
@@ -94,22 +95,21 @@ def show_parents(zfs_name):
         count += 1
 
 
-def _get_child_tree(zfs_name, depth=0):
-    for item in dependency_list:
-        if zfs_name == item['name']:
-            for i in item['children']:
-                indent = " " * 4
-                next_level = "\u2514\u2500\u2500 "
-                prefix = "{}{}".format((indent * (depth-1)), next_level)
-                print("{}{}".format(prefix, i))
-                _get_child_tree(i, depth+1)
-
-
 def show_children(zfs_name):
     global dependency_list
     print(zfs_name)
-    _get_child_tree(zfs_name, 1)
 
+    def _show_child_tree(zfs_name, depth=0):
+        indent = " " * 3
+        next_level = "\u2514\u2500 "
+        for item in dependency_list:
+            if zfs_name == item['name']:
+                for i in item['children']:
+                    prefix = "{}{}".format((indent * (depth-1)), next_level)
+                    print("{}{}".format(prefix, i))
+                    _show_child_tree(i, depth+1)
+
+    _show_child_tree(zfs_name, 1)
 
 
 def show_tree(zfs=None):
@@ -122,15 +122,20 @@ def show_tree(zfs=None):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('zfs_name', help='the zfs name as seen with `zfs list -o name`')
+    args = parser.parse_args()
 
-    zfs_name_origin_list = get_zfs_name_origin_list()
+
+    _zfs_name_origin_list = _get_zfs_name_origin_list()
 
     global dependency_list
-    dependency_list = create_dependency_list(zfs_name_origin_list)
+    dependency_list = create_dependency_list(_zfs_name_origin_list)
 
-    #pp(dependency_list)
-    #show_tree('antlets/ant1')
-    show_tree('antlets/_templates/Win10')
+    show_children(args.zfs_name)
+
+
+    #show_tree('antlets/_templates/Win10')
     #show_parents('antlets/ant1')
     #show_children('antlets/_templates/ubuntu-xenial')
     #show_children('antlets/_templates/ubuntu-xenial@snap')
