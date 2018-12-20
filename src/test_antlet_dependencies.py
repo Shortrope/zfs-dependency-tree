@@ -100,6 +100,18 @@ class TestAntletDependencies(unittest.TestCase):
         result = create_dependency_list(self.short_zfs_list)
         self.assertEqual(result, self.short_dependency_list)
 
+    def test_create_json_list_returns_a_list(self):
+        dlist = create_dependency_list(self.short_zfs_list)
+        result = create_json_list(dlist)
+        self.assertIsInstance(result, list)
+
+    def test_create_json_list_each_item_is_a_dict(self):
+        dlist = create_dependency_list(self.short_zfs_list)
+        result = create_json_list(dlist)
+        for item in result:
+            self.assertIsInstance(item, dict)
+
+        
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@
 from subprocess import Popen, PIPE
 import argparse
 from pprint import pprint as pp
+from sample_data import *
 
 
 def _get_zfs_name_origin_list():
@@ -55,6 +56,49 @@ def create_dependency_list(zlist):
         parent_item = parent_item.update({'children': children})
 
     return zlist
+
+
+
+
+def insert_children(zobj):
+    for item in dependency_list:
+        if zobj['name'] == item['name']:
+            for child in item['children']:
+                new_zobj = {'name': child, 'children': []}
+                insert_children(new_zobj)
+                zobj['children'].append(new_zobj)
+
+
+def create_json_list(dependency_list):
+    jlist = []
+    # Create list of top level zfs (zfs with no parents)
+    for item in dependency_list:
+        if not item['parent']:
+            jlist.append({'name': item['name'], 'children': []})
+
+    # Add children
+    # jobj is a {name: jname, children: []} object
+    def _add_child_list(jobj):
+        for ditem in dependency_list:
+            if jobj['name'] == ditem['name']:
+                for child in ditem['children']:
+                    new_jobj = {'name': child, 'children': []}
+                    _add_child_list(new_jobj)
+                    jobj['children'].append(new_jobj)
+                    pp(jobj)
+                    
+                #    _add_child_list(item)
+
+    for jitem in jlist:
+        #_add_child_list(jitem)
+        insert_children(jitem)
+
+    return jlist
+
+
+
+
+
 
 
 def _get_zfs_item(zfs_name):
@@ -124,24 +168,30 @@ def show_tree(zfs=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('zfs_name', help='the zfs name as seen with `zfs list -o name`')
+    parser.add_argument('-t', help="use sample data", choices=range(1,4), type=int)
     args = parser.parse_args()
 
-
-    _zfs_name_origin_list = _get_zfs_name_origin_list()
-
     global dependency_list
+    global json_list
+
+    if args.t == 1:
+        _zfs_name_origin_list = nolist1()
+    elif args.t == 2:
+        _zfs_name_origin_list = nolist2()
+    elif args.t == 3:
+        _zfs_name_origin_list = nolist3()
+    else:
+        _zfs_name_origin_list = _get_zfs_name_origin_list()
+
     dependency_list = create_dependency_list(_zfs_name_origin_list)
 
-    show_children(args.zfs_name)
+    json_list = create_json_list(dependency_list)
+    print("\n\n** json list:")
+    pp(json_list)
+    print()
 
+    #show_children(args.zfs_name)
 
-    #show_tree('antlets/_templates/Win10')
-    #show_parents('antlets/ant1')
-    #show_children('antlets/_templates/ubuntu-xenial')
-    #show_children('antlets/_templates/ubuntu-xenial@snap')
-    #print(get_parent('antlets/ant2'))
-    #print(get_parent('antlets/Win10-iso'))
-    #print(get_parent('antlets/_templates/Win10@snap'))
 
 
 if __name__ == '__main__':
