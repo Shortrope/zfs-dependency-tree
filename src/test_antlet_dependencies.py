@@ -9,108 +9,97 @@ class TestAntletDependencies(unittest.TestCase):
 
     def setUp(self):
 
-        self.short_zfs_list = ["antlets\t-",
-                        "antlets/_templates/ubuntu-xenial\t-",
-                        "antlets/_templates/ubuntu-xenial@snap\t-",
-                        "antlets/ant1\tantlets/_templates/ubuntu-xenial@snap",
-                        "antlets/ant2\tantlets/_templates/ubuntu-xenial@snap",
-                        "antlets/ant3\tantlets/_templates/ubuntu-xenial@snap"]
+            
+        self.zfs_nolist = [ 'antlets\t-',
+                        'antlets/_templates\t-',
+                        'antlets/_templates/Win10\t-',
+                        'antlets/_templates/Win10@snap\t-',
+                        'antlets/_templates/ubuntu-xenial\t-',
+                        'antlets/_templates/ubuntu-xenial@snap\t-',
+                        'antlets/win1\tantlets/_templates/Win10@snap',
+                        'antlets/win2\tantlets/_templates/Win10@snap',
+                        'antlets/ubu1\tantlets/_templates/ubuntu-xenial@snap',
+                        'antlets/ubu2\tantlets/_templates/ubuntu-xenial@snap',
+                        'antlets/_tmp\t-'
+                      ]
 
-        self.short_dependency_list = [{
-                                       'name': 'antlets',
-                                       'children': [],
-                                       'parent': None
-                                      },
-                                      {
-                                       'name': 'antlets/_templates/ubuntu-xenial',
-                                       'children': ['antlets/_templates/ubuntu-xenial@snap'],
-                                       'parent': None
-                                      },
-                                      {
-                                       'name': 'antlets/_templates/ubuntu-xenial@snap',
-                                       'children': ['antlets/ant1', 'antlets/ant2', 'antlets/ant3'],
-                                       'parent': 'antlets/_templates/ubuntu-xenial'
-                                      },
-                                      {
-                                       'name': 'antlets/ant1',
-                                       'children': [],
-                                       'parent': 'antlets/_templates/ubuntu-xenial@snap'
-                                      },
-                                      {
-                                       'name': 'antlets/ant2',
-                                       'children': [],
-                                       'parent': 'antlets/_templates/ubuntu-xenial@snap'
-                                      },
-                                      {
-                                       'name': 'antlets/ant3',
-                                       'children': [],
-                                       'parent': 'antlets/_templates/ubuntu-xenial@snap'
-                                      }]
+        self.long_zfs_dlist = [ { 'name': 'antlets',
+                        'parent': None,
+                        'children': []},
+                      { 'name': 'antlets/_templates',
+                        'parent': None,
+                        'children': []},
+                      { 'name': 'antlets/_templates/Win10',
+                        'parent': None,
+                        'children': ['antlets/_templates/Win10@snap']},
+                      { 'name': 'antlets/_templates/Win10@snap',
+                        'parent': 'antlets/_templates/Win10',
+                        'children': ['antlets/win1', 'antlets/win2']},
+                      { 'name': 'antlets/_templates/ubuntu-xenial',
+                        'parent': None,
+                        'children': ['antlets/_templates/ubuntu-xenial@snap']},
+                      { 'name': 'antlets/_templates/ubuntu-xenial@snap',
+                        'parent': 'antlets/_templates/ubuntu-xenial',
+                        'children': ['antlets/ubu1', 'antlets/ubu2']},
+                      { 'name': 'antlets/win1',
+                        'parent': 'antlets/_templates/Win10@snap',
+                        'children': []},
+                      { 'name': 'antlets/win2',
+                        'parent': 'antlets/_templates/Win10@snap',
+                        'children': []},
+                      { 'name': 'antlets/ubu1',
+                        'parent': 'antlets/_templates/ubuntu-xenial@snap',
+                        'children': []},
+                      { 'name': 'antlets/ubu2',
+                        'parent': 'antlets/_templates/ubuntu-xenial@snap',
+                        'children': []},
+                      { 'name': 'antlets/_tmp',
+                        'parent': None,
+                        'children': []}
+                    ]
 
-        self.long_zfs_list = ["antlets\t-",
-                        "antlets/Win10-base\tantlets/_templates/Win10@snap",
-                        "antlets/Win10-base2\tantlets/_templates/Win10@snap",
-                        "antlets/Win10-iso\tantlets/_templates/W10-1803-iso.kvm@1803",
-                        "antlets/Win10-iso@sysprep\t-",
-                        "antlets/Win10s\tantlets/_templates/Win10-1803-spc.kvm@1803",
-                        "antlets/Win10s@uptodate\t-",
-                        "antlets/_templates\t-",
-                        "antlets/_templates/Blank\t-",
-                        "antlets/_templates/Blank@snap\t-",
-                        "antlets/_templates/Ubuntu16.04\t-",
-                        "antlets/_templates/Ubuntu16.04@snap\t-",
-                        "antlets/_templates/W10-1803-iso.kvm\tantlets/_templates/Blank@snap",
-                        "antlets/_templates/W10-1803-iso.kvm@1803\t-",
-                        "antlets/_templates/W10-1803-iso.kvm@snap\t-",
-                        "antlets/_templates/Win10\t-",
-                        "antlets/_templates/Win10@snap\t-",
-                        "antlets/_templates/Win10-1803-spc.kvm\tantlets/_templates/Win10-Spice@snap",
-                        "antlets/_templates/Win10-1803-spc.kvm@1803\t-",
-                        "antlets/_templates/Win10-1803-spc.kvm@snap\t-",
-                        "antlets/_templates/Win10-Spice\t-",
-                        "antlets/_templates/Win10-Spice@snap\t-",
-                        "antlets/_templates/ubuntu-xenial\t-",
-                        "antlets/_templates/ubuntu-xenial@snap\t-",
-                        "antlets/_tmp\t-",
-                        "antlets/ant1\tantlets/_templates/ubuntu-xenial@snap",
-                        "antlets/ant2\tantlets/_templates/ubuntu-xenial@snap",
-                        "antlets/ant3\tantlets/_templates/ubuntu-xenial@snap",
-                        "antlets/isos"]
+
+
 
     def test_create_dependency_list_returns_a_list(self):
-        result = create_dependency_list(self.short_zfs_list)
+        result = create_dependency_list(self.zfs_nolist)
         self.assertIsInstance(result, list)
 
     def test_create_dependency_list_returns_a_list_of_dicts(self):
-        result = create_dependency_list(self.short_zfs_list)
+        result = create_dependency_list(self.zfs_nolist)
         for item in result:
             self.assertIsInstance(item, dict)
 
     def test_create_dependency_list_each_dict_has_3_keys(self):
-        result = create_dependency_list(self.short_zfs_list)
+        result = create_dependency_list(self.zfs_nolist)
         for item in result:
             self.assertEqual(len(item), 3)
 
     def test_create_dependency_list_each_dict_children_key_is_a_list(self):
-        result = create_dependency_list(self.short_zfs_list)
+        result = create_dependency_list(self.zfs_nolist)
         for item in result:
             self.assertIsInstance(item['children'], list)
 
     def test_create_dependency_list(self):
-        result = create_dependency_list(self.short_zfs_list)
-        self.assertEqual(result, self.short_dependency_list)
+        result = create_dependency_list(self.zfs_nolist)
+        self.assertEqual(result, self.long_zfs_dlist)
 
     def test_create_json_list_returns_a_list(self):
-        dlist = create_dependency_list(self.short_zfs_list)
+        dlist = create_dependency_list(self.zfs_nolist)
         result = create_json_list(dlist)
         self.assertIsInstance(result, list)
 
     def test_create_json_list_each_item_is_a_dict(self):
-        dlist = create_dependency_list(self.short_zfs_list)
+        dlist = create_dependency_list(self.zfs_nolist)
         result = create_json_list(dlist)
         for item in result:
             self.assertIsInstance(item, dict)
 
+    def test_create_json_list_each_dict_has_2_keys(self):
+        dlist = create_dependency_list(self.zfs_nolist)
+        result = create_json_list(dlist)
+        for item in result:
+            self.assertEqual(len(item), 2)
         
 
 
