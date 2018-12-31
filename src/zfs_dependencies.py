@@ -11,7 +11,7 @@ dependency_list = []
 
 
 def create_parser():
-    parser = ArgumentParser(description='Returns a zfs dependency tree. If no arguments are given the tree is printed in an easily readable format.')
+    parser = ArgumentParser(description='Returns a zfs dependency tree.\nIf no arguments are given the tree is printed in an easily readable format.')
     parser.add_argument('-j', '--json',
         help='return a json string',
         action='store_true')
