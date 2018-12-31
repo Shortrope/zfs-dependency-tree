@@ -77,18 +77,18 @@ def create_dependency_list(zfs_name_origin_list):
     return dependency_list
 
 
-
-def insert_children(zobj):
-    for item in dependency_list:
-        if zobj['name'] == item['name']:
-            for child in item['children']:
-                new_zobj = {'name': child, 'children': []}
-                zobj['children'].append(new_zobj)
-                insert_children(new_zobj)
-
-
 def create_json_list(dependency_list):
+
+    def insert_children(zobj):
+        for item in dependency_list:
+            if zobj['name'] == item['name']:
+                for child in item['children']:
+                    new_zobj = {'name': child, 'children': []}
+                    zobj['children'].append(new_zobj)
+                    insert_children(new_zobj)
+
     jlist = []
+
     # Create list of top level zfs (zfs with no parents)
     for item in dependency_list:
         if not item['parent']:
@@ -101,15 +101,13 @@ def create_json_list(dependency_list):
     return jlist
 
 
-
-def get_zfs_item(zfs_name):
-
-    for item in dependency_list:
-        if item['name'] == zfs_name:
-            return item
-
-
 def get_parent_list(zfs_name):
+
+    def get_zfs_item(zfs_name):
+        for item in dependency_list:
+            if item['name'] == zfs_name:
+                return item
+
     parent_list = []
 
     parent = get_zfs_item(zfs_name)['parent']
@@ -162,9 +160,6 @@ def get_top_level_parent_list(dependency_list):
         if not item['parent']:
             top_level_parent_list.append(item['name'])
     return top_level_parent_list
-
-
-#def show_tree():
 
 
 def main():
