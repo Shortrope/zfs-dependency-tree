@@ -2,17 +2,32 @@
 '''Get antlet dependencies'''
 
 from subprocess import Popen, PIPE
-import argparse
+from argparse import ArgumentParser
 from pprint import pprint as pp
 from sample_data import *
 
 
 dependency_list = []
 
+
+def create_parser():
+    parser = ArgumentParser(description='Returns a zfs dependency tree. If no arguments are given the tree is printed in an easily readable format.')
+    parser.add_argument('-j', '--json',
+        help='return a json string',
+        action='store_true')
+    parser.add_argument('--version',
+        action='version',
+        version='%(prog)s 0.1.0')
+    parser.add_argument('-t', help="use sample data", choices=[0,1,2,11,24], type=int)
+
+    return parser
+
+
+
 def get_zfs_name_origin_list():
     '''Gets a list of strings, each containing the zfs name and origin - incluedes snapshots'''
 
-    zfs_list = []
+    zfs_name_origin_list = []
 
     # get zfs list with snapshots and origins
     with Popen(["zfs list -H -t filesystem,snapshot -o name,origin | grep -v antlets/_docker"],
@@ -20,26 +35,28 @@ def get_zfs_name_origin_list():
 
         for bytes in lister.stdout:
             line = bytes.decode().strip()
-            zfs_list.append(line)
+            zfs_name_origin_list.append(line)
 
-    return zfs_list
+    return zfs_name_origin_list
 
 
-def create_dependency_list(zlist):
+def create_dependency_list(zfs_name_origin_list):
     '''Creates a dependency list from the 'name origin' list. 
     This is a list of dict's, one for each zfs name. 
     Keys are:
-        'name':  String - zfs name
-        'parent' String - parent zfs name
+        'name':    String - zfs name
+        'parent'   String - parent zfs name
         'children' List of Strings - zfs names of dependent children'''
 
+    dependency_list = []
+
     # convert each name,origin string into a dict
-    for index, item in enumerate(zlist):
+    for item in zfs_name_origin_list:
         name, _, origin = item.partition('\t')
-        zlist[index] = {'name':name, 'parent': origin}
+        dependency_list.append({'name':name, 'parent': origin})
 
     # populate empty 'parent' values
-    for item in zlist:
+    for item in dependency_list:
         if item['parent'] != '-':
             continue
         elif '@' in item['name']:
@@ -50,14 +67,15 @@ def create_dependency_list(zlist):
 
     # populate 'children' values
     '''Does the current zfs name == another item 'parent' name'''
-    for parent_item in zlist:
+    for parent_item in dependency_list:
         children = []
-        for item in zlist:
+        for item in dependency_list:
             if parent_item['name'] == item['parent']:
                 children.append(item['name'])
         parent_item = parent_item.update({'children': children})
 
-    return zlist
+    return dependency_list
+
 
 
 def insert_children(zobj):
@@ -138,20 +156,19 @@ def show_children(zfs_name):
 
     _show_child_tree(zfs_name, 1)
 
+def get_top_level_parent_list(dependency_list):
+    top_level_parent_list = []
+    for item in dependency_list:
+        if not item['parent']:
+            top_level_parent_list.append(item['name'])
+    return top_level_parent_list
 
-def show_tree(zfs=None):
-    if zfs:
-        # show tree for specific zfs
-        show_parents(zfs)
-        show_children(zfs)
-    #else:
-        # show entire tree.. all trees
+
+#def show_tree():
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--name', help='the antlet name')
-    parser.add_argument('-t', help="use sample data", choices=[0,1,2,11,24], type=int)
+    parser = create_parser()
     args = parser.parse_args()
 
     global dependency_list
@@ -177,12 +194,17 @@ def main():
     dependency_list = create_dependency_list(zfs_name_origin_list)
     #pp(dependency_list)
 
-    json_list = create_json_list(dependency_list)
-    print("** json list:")
-    pp(json_list)
-    print()
 
-    #show_children(args.zfs_name)
+    if args.json:
+        json_list = create_json_list(dependency_list)
+        print("** json list:")
+        pp(json_list)
+        print()
+    else:
+        for top_level_item in get_top_level_parent_list(dependency_list):
+            show_children(top_level_item)
+            print()
+
 
 
 
